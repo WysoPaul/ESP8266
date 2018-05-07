@@ -57,7 +57,7 @@ Serial.printf("Le serveur est disponible :-) \n");
 //ENVOIS COMMANDE HTTP
 //Constitution de la requette. Si j'utilise pas la fonction String("") j'ai une erreur de compilation ...
 Url= String("GET /json.htm?type=") + Requette + " HTTP/1.1\r\n" +
-"Host: " + DOMOTICS + "\r\n" +					//#TODO je devrais pouvoir remplacer l'adresse IP par la constante DOMOTICS
+"Host: " + DOMOTICS + "\r\n" +
 "Connection: Close\r\n" +
 "\r\n";
 
@@ -86,109 +86,16 @@ Serial.printf("Le serveur a repondu :-)\n");
 	yield();
 //PARSSAGE DE LA REPONSE
 client.readBytesUntil('\r',RepDomotics,sizeof(RepDomotics)); //A noter qu'il n'y a jamais de \r, ça doit s'arreter au timeout ...
-//Serial.print(RepDomotics);
-/*
-//					Pour tester 
-client.stop();
-delay(30000);
-	yield();
-	//CONNECTION DOMOTICS
-if (client.connect(DOMOTICS,PORT)<0) {   //On réalise la connection au serveur:port, si elle est réussi on poursuit
-      client.stop();
-      GerErreurs(-10);
-  }
-Serial.printf("Le serveur est disponible :-) \n");
-Requette="devices&rid=25";
-Url= String("GET /json.htm?type=") + Requette + " HTTP/1.1\r\n" +
-"Host: " + DOMOTICS + "\r\n" +					//#TODO je devrais pouvoir remplacer l'adresse IP par la constante DOMOTICS
-"Connection: Close\r\n" +
-"\r\n";
-	yield();
-Serial.printf("\nEnvois la requette:\n");
-client.print(Url);
-Serial.printf("\nDEBUG----Requette envoyé!\n");
-//REPONSE SERVEUR
-Timeout = millis();
-while (client.available() == 0) {
-	yield();
-	if (millis() - Timeout > 5000) {		//Timeout 5sec venant d'un code du web ...
-		client.stop();
-		GerErreurs(-20);
-    }
-}
-// Check HTTP status
-client.readBytesUntil('\r', status, sizeof(status));
-if (strcmp(status, "HTTP/1.1 200 OK") != 0)
-	GerErreurs(-30);
-// Skip HTTP headers
-								//char endOfHeaders[] = "\r\n\r\n";
-if (!client.find("\r\n\r\n"))	//(!client.find(endOfHeaders))
-	GerErreurs(-30);
-Serial.printf("Le serveur a repondu :-)\n");
-
-//PARSSAGE DE LA REPONSE
-client.readBytesUntil('\r',RepDomotics,sizeof(RepDomotics)); //A noter qu'il n'y a jamais de \r, ça doit s'arreter au timeout ...
-client.stop();
-Serial.print(RepDomotics);
-Etat25 = ParseJson(&ReponseBrute,String(Etat25),"Data"); //IDX 25= ConsignePortePoules
-Serial.printf("\nDEBUG---- Valeur de Etat25: ");	//DEBUG##############################
-Serial.println(Etat25);							//DEBUG##############################
-
-//					Pour tester 
-
-
-
-
-
-
-yield();
-Serial.printf("\nDEBUG----Client connected: ");	//DEBUG##############################
-Serial.println(client.connected());
-Serial.printf("\nDEBUG----taille de client: ");	//DEBUG##############################
-Serial.println(client.available());
-Serial.printf("\nDEBUG----Flush du client\n");	//DEBUG##############################
-client.flush();
-Serial.printf("\nDEBUG----taille de client: ");	//DEBUG##############################
-Serial.println(client.available() );
-client.stop();
-*/
+//client.stop();								//	Faut voir s'il faut cette commande ou pas
 ReponseBrute=String(RepDomotics);				//Et là c'est pas très optimal le fait de décalrer un char[2000] puis un string pour la même opération ...
 Serial.printf("\nDEBUG----Appel de ParseJson");	//DEBUG##############################
 Etat24 = ParseJson(&ReponseBrute,String(Etat24),"Data"); //IDX 24= RetourEtatPortePoules
 Serial.printf("\nDEBUG---- Valeur de Etat24: ");	//DEBUG##############################
 Serial.println(Etat24);							//DEBUG##############################
-yield();
-/*
-// ********** Voilà, là on connait l'état de IDX24, maintenant il faut avoir celui IDX25, donc on refait une nouvelle requète ***********
-// ********** Pour le moment je fais un brutal copié collé du code ******
-//-----------------------------------------------------------------------
-Serial.printf("\nDEBUG----Clear status\n");	//DEBUG##############################
-status[32]={0};
-Serial.printf("\nDEBUG----Status= %c\n",status);
-Serial.printf("\nDEBUG----Clear RepDomotics\n");	//DEBUG##############################
-RepDomotics[32]={0};
-Serial.printf("\nDEBUG----RepDomotics= %c\n",RepDomotics);
-Serial.printf("\nDEBUG----Clear ReponseBrute\n");	//DEBUG##############################
-ReponseBrute="";
-Serial.printf("\nDEBUG----RepBrute= ");
-Serial.println(ReponseBrute);
 
-Serial.printf("\nDEBUG----Client connected: ");	//DEBUG##############################
-Serial.println(client.connected());
-Serial.printf("\nDEBUG----taille de client: ");	//DEBUG##############################
-Serial.println(client.available() );
-Serial.printf("\nDEBUG----Flush du client\n");	//DEBUG##############################
-client.flush();
-Serial.printf("\nDEBUG----taille de client: ");	//DEBUG##############################
-Serial.println(client.available() );
-Serial.printf("\nDEBUG---- ");
-Serial.printf("Connexion etablie au reseau %s\nRouteur %s\nForce du signal: %d dBm\n", WiFi.SSID().c_str(),WiFi.BSSIDstr().c_str(),WiFi.RSSI());
-Serial.printf("\nDEBUG---- ");
-Serial.printf("Alias: %s\nAdress IP: %s\nNetMask: %s\nPasserelle: %s\n",WiFi.hostname().c_str(),WiFi.localIP().toString().c_str(),WiFi.subnetMask().toString().c_str(),WiFi.gatewayIP().toString().c_str());
 
-Serial.printf("\nDEBUG---- Pause de 5sec et lancement connection\n");	//DEBUG##############################
-*/
-delay(30000);
+//------------------ Requette pour IDX25 --------------------------------- 
+delay(30000);		// A priori on peut pas faire deux requète succéssives trop vite ...
 //CONNECTION DOMOTICS
 if (client.connect(DOMOTICS,PORT)<0) {   //On réalise la connection au serveur:port, si elle est réussi on poursuit
       client.stop();
@@ -198,10 +105,9 @@ Serial.printf("Le serveur est disponible :-) \n");
 
 //ENVOIS COMMANDE HTTP
 //Constitution de la requette. Si j'utilise pas la fonction String("") j'ai une erreur de compilation ...
-//------------------ MàJ de la requette --------------------------------- 
 Requette="devices&rid=25";
 Url= String("GET /json.htm?type=") + Requette + " HTTP/1.1\r\n" +
-"Host: " + DOMOTICS + "\r\n" +					//#TODO je devrais pouvoir remplacer l'adresse IP par la constante DOMOTICS
+"Host: " + DOMOTICS + "\r\n" +
 "Connection: Close\r\n" +
 "\r\n";
 
