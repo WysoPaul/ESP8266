@@ -248,10 +248,12 @@ if (Etat24!=Etat25){
 		Serial.printf("Domoticz demande \"ON\" => Tourner moteur dans le sens horaire\n");
 		TournerMoteur(true,4095,900);  
 		Serial.printf("Fin de rotation moteur.\n");
+		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=Off");
 	}else if (Etat25=="Off"){
 		Serial.print("Domoticz demande \"OFF\" => Tourner moteur dans le sens ANTI-horaire\n");
 		TournerMoteur(false,4095,900);
 		Serial.printf("Fin de rotation moteur.\n");
+		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=Off");
 	}else{
 		GerErreurs(-100);
 	}
