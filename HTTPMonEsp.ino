@@ -39,10 +39,8 @@ return ChaineAParser->substring(IndexDebut+1,IndexFin);
 
 
 void HTTPMonEsp(String *ReponseBrute, String Requette){
-
-//En créant la variable "ReponseBrute" dans le loop et passant son adresse ici, je peux écrir à l'adresse de la variable ici et récupéré son contenu dans le loop
-
-//Requette="devices&rid=24";    //Exemple
+Serial.printf("\nPause de 10sec.\n");
+delay(10000);
 
 WiFiClient client;    				// Cré un client wifi (je sais pas ce que ça veut dire ...)
 String Url;
@@ -52,6 +50,7 @@ char status[32] = {0};				// C'est là qu'on va stoqué l'info que le serveur à
 char RepDomotics[2000]={0};			// Variable Char stockant la réponse HTTP du serveur
 
 //CONNECTION DOMOTICS
+Serial.printf("Tentative de connexion a %s\n",DOMOTICS);
 if (client.connect(DOMOTICS,PORT)<0) {   //On réalise la connection au serveur:port, si elle est réussi on poursuit
       client.stop();
       GerErreurs(-10);
@@ -65,8 +64,8 @@ Url= String("GET /json.htm?type=") + Requette + " HTTP/1.1\r\n" +
 "Connection: Close\r\n" +
 "\r\n";
 
-Serial.printf("\nEnvois a \"%s\" la requette:\n",DOMOTICS);
-Serial.println(Url);                                //#TODO Je voulais fusionner ces deux lignes (printf et println) en utilisant %c ou %s mais j'ai des erreurs de compilation => ????
+Serial.printf("\nEnvois a \"%s\" la requette: [...] ",DOMOTICS);
+Serial.println(Requette);                                //#TODO Je voulais fusionner ces deux lignes (printf et println) en utilisant %c ou %s mais j'ai des erreurs de compilation => ????
 client.print(Url);
 
 
@@ -91,4 +90,5 @@ Serial.printf("Le serveur a repondu :-)\n");
 //LECTURE DU BUFFER HTTP
 client.readBytesUntil('\r',RepDomotics,sizeof(RepDomotics)); //A noter qu'il n'y a jamais de \r, ça doit s'arreter au timeout ...
 client.stop();
+*ReponseBrute=String(RepDomotics);	
 }

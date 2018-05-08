@@ -31,243 +31,67 @@ if (Etat<0) GerErreurs(Etat);
 }
 
 void loop(void){//__________________________LOOP________________________________
-//CONNECTION AU SERVEUR
-Serial.printf("Tentative de connexion a %s\n",DOMOTICS);
-WiFiClient client;    				// Cré un client wifi (je sais pas ce que ça veut dire ...)
-//Toutes le variables pour le parse et la requète HTTP :-/
-char status[32] = {0};				// C'est là qu'on va stoqué l'info que le serveur à bien compris la question #ToDo ça dois pouvoir être optimisé
-char RepDomotics[2000]={0};			// Variable Char stockant la réponse HTTP du serveur
-String ReponseBrute;				// Variable String récupérant RepDomotics ...   PAS OPTIMAL DU TOUT
-
+String ReponseBrute;				// Variable String récupérant RepDomotics
 String Etat24="24", Etat25="25";	// IDX 24= RetourEtatPortePoules, IDX 25= ConsignePortePoules
 
-
-//Etat= HTTPMonEsp(); Je voulais créer une lib, mais je sais pas comment passer "l'instance client" à la fonction ... #ToDo
-String Url;
-String Requette="devices&rid=24";    //La requette vers Domoticz après "/json.htm?type="
-unsigned long Timeout;
-
-//CONNECTION DOMOTICS
-if (client.connect(DOMOTICS,PORT)<0) {   //On réalise la connection au serveur:port, si elle est réussi on poursuit
-      client.stop();
-      GerErreurs(-10);
-  }
-Serial.printf("Le serveur est disponible :-) \n");
-
-//ENVOIS COMMANDE HTTP
-//Constitution de la requette. Si j'utilise pas la fonction String("") j'ai une erreur de compilation ...
-Url= String("GET /json.htm?type=") + Requette + " HTTP/1.1\r\n" +
-"Host: " + DOMOTICS + "\r\n" +					//#TODO je devrais pouvoir remplacer l'adresse IP par la constante DOMOTICS
-"Connection: Close\r\n" +
-"\r\n";
-
-Serial.printf("\nEnvois a \"%s\" la requette:\n",DOMOTICS);
-Serial.println(Url);                                //#TODO Je voulais fusionner ces deux lignes (printf et println) en utilisant %c ou %s mais j'ai des erreurs de compilation => ????
-client.print(Url);
-
-//REPONSE SERVEUR
-Timeout = millis();
-while (client.available() == 0) {
-	yield();
-	if (millis() - Timeout > 5000) {		//Timeout 5sec venant d'un code du web ...
-		client.stop();
-		GerErreurs(-20);
-    }
-}
-// Check HTTP status
-client.readBytesUntil('\r', status, sizeof(status));
-if (strcmp(status, "HTTP/1.1 200 OK") != 0)
-	GerErreurs(-30);
-// Skip HTTP headers
-								//char endOfHeaders[] = "\r\n\r\n";
-if (!client.find("\r\n\r\n"))	//(!client.find(endOfHeaders))
-	GerErreurs(-30);
-Serial.printf("Le serveur a repondu :-)\n");
-	yield();
-//PARSSAGE DE LA REPONSE
-client.readBytesUntil('\r',RepDomotics,sizeof(RepDomotics)); //A noter qu'il n'y a jamais de \r, ça doit s'arreter au timeout ...
-//Serial.print(RepDomotics);
-/*
-//					Pour tester 
-client.stop();
-delay(30000);
-	yield();
-	//CONNECTION DOMOTICS
-if (client.connect(DOMOTICS,PORT)<0) {   //On réalise la connection au serveur:port, si elle est réussi on poursuit
-      client.stop();
-      GerErreurs(-10);
-  }
-Serial.printf("Le serveur est disponible :-) \n");
-Requette="devices&rid=25";
-Url= String("GET /json.htm?type=") + Requette + " HTTP/1.1\r\n" +
-"Host: " + DOMOTICS + "\r\n" +					//#TODO je devrais pouvoir remplacer l'adresse IP par la constante DOMOTICS
-"Connection: Close\r\n" +
-"\r\n";
-	yield();
-Serial.printf("\nEnvois la requette:\n");
-client.print(Url);
-Serial.printf("\nDEBUG----Requette envoyé!\n");
-//REPONSE SERVEUR
-Timeout = millis();
-while (client.available() == 0) {
-	yield();
-	if (millis() - Timeout > 5000) {		//Timeout 5sec venant d'un code du web ...
-		client.stop();
-		GerErreurs(-20);
-    }
-}
-// Check HTTP status
-client.readBytesUntil('\r', status, sizeof(status));
-if (strcmp(status, "HTTP/1.1 200 OK") != 0)
-	GerErreurs(-30);
-// Skip HTTP headers
-								//char endOfHeaders[] = "\r\n\r\n";
-if (!client.find("\r\n\r\n"))	//(!client.find(endOfHeaders))
-	GerErreurs(-30);
-Serial.printf("Le serveur a repondu :-)\n");
-
-//PARSSAGE DE LA REPONSE
-client.readBytesUntil('\r',RepDomotics,sizeof(RepDomotics)); //A noter qu'il n'y a jamais de \r, ça doit s'arreter au timeout ...
-client.stop();
-Serial.print(RepDomotics);
-Etat25 = ParseJson(&ReponseBrute,String(Etat25),"Data"); //IDX 25= ConsignePortePoules
-Serial.printf("\nDEBUG---- Valeur de Etat25: ");	//DEBUG##############################
-Serial.println(Etat25);							//DEBUG##############################
-
-//					Pour tester 
-
-
-
-
-
-
-yield();
-Serial.printf("\nDEBUG----Client connected: ");	//DEBUG##############################
-Serial.println(client.connected());
-Serial.printf("\nDEBUG----taille de client: ");	//DEBUG##############################
-Serial.println(client.available());
-Serial.printf("\nDEBUG----Flush du client\n");	//DEBUG##############################
-client.flush();
-Serial.printf("\nDEBUG----taille de client: ");	//DEBUG##############################
-Serial.println(client.available() );
-client.stop();
-*/
-ReponseBrute=String(RepDomotics);				//Et là c'est pas très optimal le fait de décalrer un char[2000] puis un string pour la même opération ...
-Serial.printf("\nDEBUG----Appel de ParseJson");	//DEBUG##############################
-Etat24 = ParseJson(&ReponseBrute,String(Etat24),"Data"); //IDX 24= RetourEtatPortePoules
-Serial.printf("\nDEBUG---- Valeur de Etat24: ");	//DEBUG##############################
-Serial.println(Etat24);							//DEBUG##############################
-yield();
-/*
-// ********** Voilà, là on connait l'état de IDX24, maintenant il faut avoir celui IDX25, donc on refait une nouvelle requète ***********
-// ********** Pour le moment je fais un brutal copié collé du code ******
-//-----------------------------------------------------------------------
-Serial.printf("\nDEBUG----Clear status\n");	//DEBUG##############################
-status[32]={0};
-Serial.printf("\nDEBUG----Status= %c\n",status);
-Serial.printf("\nDEBUG----Clear RepDomotics\n");	//DEBUG##############################
-RepDomotics[32]={0};
-Serial.printf("\nDEBUG----RepDomotics= %c\n",RepDomotics);
-Serial.printf("\nDEBUG----Clear ReponseBrute\n");	//DEBUG##############################
+//INTERROGATION DOMOTICS
+HTTPMonEsp(&ReponseBrute,"devices&rid=24");
+Etat24 = ParseJson(&ReponseBrute,String(Etat24),"Data"); //IDX 24= EtatPortePoules
+Serial.printf("\nValeur de Etat24: ");
+Serial.println(Etat24);
 ReponseBrute="";
-Serial.printf("\nDEBUG----RepBrute= ");
-Serial.println(ReponseBrute);
 
-Serial.printf("\nDEBUG----Client connected: ");	//DEBUG##############################
-Serial.println(client.connected());
-Serial.printf("\nDEBUG----taille de client: ");	//DEBUG##############################
-Serial.println(client.available() );
-Serial.printf("\nDEBUG----Flush du client\n");	//DEBUG##############################
-client.flush();
-Serial.printf("\nDEBUG----taille de client: ");	//DEBUG##############################
-Serial.println(client.available() );
-Serial.printf("\nDEBUG---- ");
-Serial.printf("Connexion etablie au reseau %s\nRouteur %s\nForce du signal: %d dBm\n", WiFi.SSID().c_str(),WiFi.BSSIDstr().c_str(),WiFi.RSSI());
-Serial.printf("\nDEBUG---- ");
-Serial.printf("Alias: %s\nAdress IP: %s\nNetMask: %s\nPasserelle: %s\n",WiFi.hostname().c_str(),WiFi.localIP().toString().c_str(),WiFi.subnetMask().toString().c_str(),WiFi.gatewayIP().toString().c_str());
-
-Serial.printf("\nDEBUG---- Pause de 5sec et lancement connection\n");	//DEBUG##############################
-*/
-delay(30000);
-//CONNECTION DOMOTICS
-if (client.connect(DOMOTICS,PORT)<0) {   //On réalise la connection au serveur:port, si elle est réussi on poursuit
-      client.stop();
-      GerErreurs(-10);
-  }
-Serial.printf("Le serveur est disponible :-) \n");
-
-//ENVOIS COMMANDE HTTP
-//Constitution de la requette. Si j'utilise pas la fonction String("") j'ai une erreur de compilation ...
-//------------------ MàJ de la requette --------------------------------- 
-Requette="devices&rid=25";
-Url= String("GET /json.htm?type=") + Requette + " HTTP/1.1\r\n" +
-"Host: " + DOMOTICS + "\r\n" +					//#TODO je devrais pouvoir remplacer l'adresse IP par la constante DOMOTICS
-"Connection: Close\r\n" +
-"\r\n";
-
-Serial.printf("\nEnvois a \"%s\" la requette:\n",DOMOTICS);
-Serial.println(Url);                                //#TODO Je voulais fusionner ces deux lignes (printf et println) en utilisant %c ou %s mais j'ai des erreurs de compilation => ????
-client.print(Url);
-Serial.printf("\nDEBUG----Requette envoyé!\n");
-//REPONSE SERVEUR
-Timeout = millis();
-while (client.available() == 0) {
-	yield();
-	if (millis() - Timeout > 5000) {		//Timeout 5sec venant d'un code du web ...
-		client.stop();
-		GerErreurs(-20);
-    }
-}
-// Check HTTP status
-client.readBytesUntil('\r', status, sizeof(status));
-if (strcmp(status, "HTTP/1.1 200 OK") != 0)
-	GerErreurs(-30);
-// Skip HTTP headers
-								//char endOfHeaders[] = "\r\n\r\n";
-if (!client.find("\r\n\r\n"))	//(!client.find(endOfHeaders))
-	GerErreurs(-30);
-Serial.printf("Le serveur a repondu :-)\n");
-
-//PARSSAGE DE LA REPONSE
-client.readBytesUntil('\r',RepDomotics,sizeof(RepDomotics)); //A noter qu'il n'y a jamais de \r, ça doit s'arreter au timeout ...
-client.stop();
-ReponseBrute=String(RepDomotics);				//Et là c'est pas très optimal le fait de décalrer un char[2000] puis un string pour la même opération ...
-//---------------------------------------------------------------------
-
-Serial.printf("\nDEBUG----Appel de ParseJson");	//DEBUG##############################
+HTTPMonEsp(&ReponseBrute,"devices&rid=25");
 Etat25 = ParseJson(&ReponseBrute,String(Etat25),"Data"); //IDX 25= ConsignePortePoules
-Serial.printf("\nDEBUG---- Valeur de Etat25: ");	//DEBUG##############################
-Serial.println(Etat25);							//DEBUG##############################
+Serial.printf("Valeur de Etat25: ");
+Serial.println(Etat25);
+ReponseBrute="";
 
-
-
-
-//ACTION MOTEUR CONDITIONNELLE
+//ACTION MOTEUR CONDITIONNELLE + MàJ DOMOTICS
 if (Etat24!=Etat25){
 	if (Etat25=="On"){
 		Serial.printf("Domoticz demande \"ON\" => Tourner moteur dans le sens horaire\n");
 		TournerMoteur(true,4095,900);  
-		Serial.printf("Fin de rotation moteur.\n");
-		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=Off");
+		Serial.printf("Fin de rotation moteur.\nMaJ Domotics...\n");
+		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=On");
 	}else if (Etat25=="Off"){
 		Serial.print("Domoticz demande \"OFF\" => Tourner moteur dans le sens ANTI-horaire\n");
 		TournerMoteur(false,4095,900);
-		Serial.printf("Fin de rotation moteur.\n");
+		Serial.printf("Fin de rotation moteur.\nMaJ Domotics...\n");
 		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=Off");
 	}else{
+		HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=!!!'Poule': Réponse Domotics Innatendu");
 		GerErreurs(-100);
 	}
 }else{
 	Serial.printf("Domoticz ne demande pas de changement.\nIDX24= %s\tIDX25=%s\n",Etat24.c_str(), Etat25.c_str());
 }
 
+//VERIFICATION QUE LA COMMANDE A ETE PRISE EN COMPTE
+Serial.print("\nVerification prise en compte commande par Domotics\n");
+Etat24="24", Etat25="25";	// IDX 24= RetourEtatPortePoules, IDX 25= ConsignePortePoules
+HTTPMonEsp(&ReponseBrute,"devices&rid=24");
+Etat24 = ParseJson(&ReponseBrute,String(Etat24),"Data"); //IDX 24= ConsignePortePoules
+Serial.printf("\nValeur de Etat24: ");
+Serial.println(Etat24);
+ReponseBrute="";
 
-//#ToDo Maintenant il faut rajouter la mise à jour IDX24, s'assurer que c'est bien enregistré, eventuellement écrire un message dans le Log de Domotics
+HTTPMonEsp(&ReponseBrute,"devices&rid=25");
+Etat25 = ParseJson(&ReponseBrute,String(Etat25),"Data"); //IDX 25= ConsignePortePoules
+Serial.printf("Valeur de Etat25: ");
+Serial.println(Etat25);
+ReponseBrute="";
 
+if (Etat24!=Etat25){
+	HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=PouleCommandeNonPriseEnCompte");
+	GerErreurs(-200);
+	}else{
+	Serial.print("Modification bien prise en compte par Domoticz.\n");
+}
 
-// DODO
+//DODO
 yield();		//C'est pour donner la main a la couche TCPIP avant de s'endormir.				
-Serial.print("Dodo ^_^\n");
+Serial.print("Dodo 60sec   ^_^\n\n\n\n");
 ESP.deepSleep(60000000,WAKE_RF_DEFAULT);	//le fameux mode deepsleep en µsec: 300 000 000 = 5mn
 delay(60000);	// Pause de 60sec (60000msec), mais qui ne s'excute jamais lorsque le deepSleep est réalisé
 }
