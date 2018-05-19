@@ -71,7 +71,7 @@ if (Etat24!=Etat25){
 Serial.print("\nVerification prise en compte commande par Domotics\n");
 Etat24="24", Etat25="25";	// IDX 24= RetourEtatPortePoules, IDX 25= ConsignePortePoules
 HTTPMonEsp(&ReponseBrute,"devices&rid=24");
-Etat24 = ParseJson(&ReponseBrute,String(Etat24),"Data"); //IDX 24= ConsignePortePoules
+Etat24 = ParseJson(&ReponseBrute,String(Etat24),"Data"); //IDX 24= RetourEtatPortePoules
 Serial.printf("\nValeur de Etat24: ");
 Serial.println(Etat24);
 ReponseBrute="";

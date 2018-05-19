@@ -19,8 +19,8 @@ Enfin, un /s répertoir peut contenir des sketch d'exemple
 //Déclaration des pins utilisé par le stepper
 #define IN1 12
 #define IN2 14
-#define IN3 4
-#define IN4 5
+#define IN3 3
+#define IN4 4
 
 void TournerMoteur(boolean,int,int);	//Commenté car problème de compilation
 void WriteStep(int OutArray[4]);		//Commenté car problème de compilation
