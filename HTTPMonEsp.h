@@ -13,5 +13,5 @@ Le fichier "keywords.txt" est dédié à l'aide contexctuel de l'IDE d'Arduino
 #ifndef HTTPMonEsp_h
 #define HTTPMonEsp_h
 String ParseJson(String *, String, String);
-int HTTPMonEsp();
+void HTTPMonEsp(String *, String);
 #endif
