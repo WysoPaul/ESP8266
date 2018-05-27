@@ -12,15 +12,21 @@ Le fichier "keywords.txt" est dédié à l'aide contexctuel de l'IDE d'Arduino
 > ou KEYWORD2 si c'est une fonction (coloration en marron)
 Enfin, un /s répertoir peut contenir des sketch d'exemple
 */
+/*
+!!! BROCHAGE DIFFERENT pour POULES et Maquette !!!!
+Poules IN1=12, IN2=13, IN3=09, IN4=10
+Maquette IN1 12, IN2 14, IN3 4, IN4 5
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*/
 
 #include <ESP8266WiFi.h>
 #ifndef StepperPWI_h
 #define StepperPWI_h
 //Déclaration des pins utilisé par le stepper
 #define IN1 12
-#define IN2 14
-#define IN3 3
-#define IN4 4
+#define IN2 13
+#define IN3 9
+#define IN4 10
 
 void TournerMoteur(boolean,int,int);	//Commenté car problème de compilation
 void WriteStep(int OutArray[4]);		//Commenté car problème de compilation

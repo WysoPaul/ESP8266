@@ -12,6 +12,7 @@
 #include "GerErreurs.h"
 #include "HTTPMonEsp.h"
 #include "InitMonESPWifi.h"
+#define IN5 14
   
 //DEMMARRAGE
 void setup(){//_________________________SETUP__________________________________
@@ -21,6 +22,9 @@ pinMode(IN1,OUTPUT);
 pinMode(IN2,OUTPUT);
 pinMode(IN3,OUTPUT);
 pinMode(IN4,OUTPUT);
+// Paramétrage de la pin pour la LED et allumage
+pinMode(IN5,OUTPUT);
+digitalWrite(IN5,true);
 
 Serial.begin(115200);
 //Serial.setDebugOutput(true);	Affiche du debug sur la connexion Wifi ...
@@ -91,7 +95,8 @@ if (Etat24!=Etat25){
 
 //DODO
 yield();		//C'est pour donner la main a la couche TCPIP avant de s'endormir.				
+digitalWrite(IN5,false);
 Serial.print("Dodo 60sec   ^_^\n\n\n\n");
-ESP.deepSleep(60000000,WAKE_RF_DEFAULT);	//le fameux mode deepsleep en µsec: 300 000 000 = 5mn
+ESP.deepSleep(1800000000,WAKE_RF_DEFAULT);	//le fameux mode deepsleep en µsec: 300 000 000 = 5mn
 delay(60000);	// Pause de 60sec (60000msec), mais qui ne s'excute jamais lorsque le deepSleep est réalisé
 }
