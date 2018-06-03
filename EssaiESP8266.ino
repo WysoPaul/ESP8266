@@ -55,12 +55,12 @@ ReponseBrute="";
 if (Etat24!=Etat25){
 	if (Etat25=="On"){
 		Serial.printf("Domoticz demande \"ON\" => Tourner moteur dans le sens horaire\n");
-		TournerMoteur(true,4095,900);  
+		TournerMoteur(false,5*4095,1400);  //(Cw, NbSteps: 4095 = 1tour, Speed)
 		Serial.printf("Fin de rotation moteur.\nMaJ Domotics...\n");
 		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=On");
 	}else if (Etat25=="Off"){
 		Serial.print("Domoticz demande \"OFF\" => Tourner moteur dans le sens ANTI-horaire\n");
-		TournerMoteur(false,4095,900);
+		TournerMoteur(true,5*4095,1400);
 		Serial.printf("Fin de rotation moteur.\nMaJ Domotics...\n");
 		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=Off");
 	}else{
@@ -96,7 +96,7 @@ if (Etat24!=Etat25){
 //DODO
 yield();		//C'est pour donner la main a la couche TCPIP avant de s'endormir.				
 digitalWrite(IN5,false);
-Serial.print("Dodo 60sec   ^_^\n\n\n\n");
-ESP.deepSleep(1800000000,WAKE_RF_DEFAULT);	//le fameux mode deepsleep en µsec: 300 000 000 = 5mn
+Serial.print("Dodo 30mn   ^_^\n\n\n\n");
+ESP.deepSleep(1800000000,WAKE_RF_DEFAULT);	//le fameux mode deepsleep en µsec: 300 000 000 = 5mn, 1800000000 =30mn
 delay(60000);	// Pause de 60sec (60000msec), mais qui ne s'excute jamais lorsque le deepSleep est réalisé
 }
