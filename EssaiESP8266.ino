@@ -11,7 +11,7 @@
 #include "GerErreurs.h"
 #include "HTTPMonEsp.h"
 #include "InitMonESPWifi.h"
-#define IN5 14
+
   
 //DEMMARRAGE
 void setup(){//_________________________SETUP__________________________________
@@ -27,7 +27,7 @@ if (Etat<0) GerErreurs(Etat);
 
 void loop(void){//__________________________LOOP________________________________
 String ReponseBrute;				// Variable String récupérant RepDomotics
-String Etat24="24", Etat25="25";	// !!!!!!!!!!!!!!!! A adapter pour le besoin !!!!!!!!!!!!!
+String Etat24="24";	// !!!!!!!!!!!!!!!! A adapter pour le besoin !!!!!!!!!!!!!
 
 //INTERROGATION DOMOTICS
 HTTPMonEsp(&ReponseBrute,"devices&rid=24");		// !!!!!!!!!!!!!!!! A adapter pour le besoin !!!!!!!!!!!!!
@@ -36,34 +36,14 @@ Serial.printf("\nValeur de Etat24: ");			// !!!!!!!!!!!!!!!! A adapter pour le b
 Serial.println(Etat24);
 ReponseBrute="";
 
-HTTPMonEsp(&ReponseBrute,"devices&rid=25");		// !!!!!!!!!!!!!!!! A adapter pour le besoin !!!!!!!!!!!!!
-Etat25 = ParseJson(&ReponseBrute,String(Etat25),"Data");
-Serial.printf("Valeur de Etat25: ");			// !!!!!!!!!!!!!!!! A adapter pour le besoin !!!!!!!!!!!!!
-Serial.println(Etat25);
-ReponseBrute="";
-
 //ACTION
-HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=On");
+HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=24&switchcmd=On");// !!!!!!!!!!!!!!!! A adapter pour le besoin !!!!!!!!!!!!!
 
-/*Si Erreur
-HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=!!!'Poule': Réponse Domotics Innatendu");
-		GerErreurs(-100);
-*/
+//Si Erreur
+//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=!!!'Poule': Réponse Domotics Innatendu");
+//GerErreurs(-100);
 
 
-//VERIFICATION QUE LA COMMANDE A ETE PRISE EN COMPTE
-Serial.print("\nVerification prise en compte commande par Domotics\n");
-Etat24="24", Etat25="25";						// !!!!!!!!!!!!!!!! A adapter pour le besoin !!!!!!!!!!!!!
-HTTPMonEsp(&ReponseBrute,"devices&rid=24");
-Etat24 = ParseJson(&ReponseBrute,String(Etat24),"Data");
-Serial.printf("\nValeur de Etat24: ");			// !!!!!!!!!!!!!!!! A adapter pour le besoin !!!!!!!!!!!!!
-Serial.println(Etat24);
-ReponseBrute="";
-
-/*Si Erreur
-HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=PouleCommandeNonPriseEnCompte");
-GerErreurs(-200);
-*/
 
 //DODO
 yield();		//C'est pour donner la main a la couche TCPIP avant de s'endormir.				
