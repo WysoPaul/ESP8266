@@ -12,7 +12,7 @@
 #include "HTTPMonEsp.h"
 #include "InitMonESPWifi.h"
 
-ADC_MODE(ADC_VCC); // a mettre tout "en haut"
+ADC_MODE(ADC_VCC); // Doit être  "tout en haut"
   
 //DEMMARRAGE
 void setup(){//_________________________SETUP__________________________________
@@ -37,7 +37,8 @@ Serial.println(ESP.getResetReason()); //Renvoi un string "human" readable de la 
 
 //Pour lire la tension d'alimentation
 
-ESP.getVcc();	// pour lire la tension de l'alim
+Serial.printf("\n Tension Alim: ");
+Serial.println(ESP.getVcc());	// pour lire la tension de l'alim
 
 }
 

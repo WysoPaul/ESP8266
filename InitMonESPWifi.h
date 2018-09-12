@@ -42,6 +42,7 @@ while (WiFi.status() != WL_CONNECTED) {
 		ConnectTentative++;
 	} 
 }
+	  
 Serial.printf("\nConnexion etablie au reseau %s\nRouteur %s\nForce du signal: %d dBm\n", WiFi.SSID().c_str(),WiFi.BSSIDstr().c_str(),WiFi.RSSI());
 Serial.printf("Alias: %s\nAdress IP: %s\nNetMask: %s\nPasserelle: %s\n",WiFi.hostname().c_str(),WiFi.localIP().toString().c_str(),WiFi.subnetMask().toString().c_str(),WiFi.gatewayIP().toString().c_str());
 Serial.printf("\n\nLes parametres de configuration sont:\n");
