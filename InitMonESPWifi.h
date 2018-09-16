@@ -15,13 +15,15 @@ Le fichier "keywords.txt" est dédié à l'aide contexctuel de l'IDE d'Arduino
 #define InitMonESPWifi_h
 void SerialPrintParamMonEsp();
 
-int ConfigWifiMonEsp(){// #ToDo: Pas réussi à mettre dans le .cpp, car pb de compilation pour accéder au constantes: NOMWIFI, MDPWIFI, ...
+//ATTENTION CETTE fonction devrait dans le ''.ino''
+// #ToDo: Pas réussi à mettre dans le .cpp, car pb de compilation pour accéder au constantes: NOMWIFI, MDPWIFI, ...
+int ConfigWifiMonEsp(){
 int ConnectTentative=0;
 //PARAMETRAGE Wifi
 Serial.printf("Debut du parametrage Wifi ");
 WiFi.disconnect(false);       //OPTIONELLE: on efface précédement sauvegardé, dans le cache, MdP et SSID
 Serial.printf(".");
-WiFi.setAutoConnect(false);   //OPTIONELLE: Si vrai le système, au boot, tente de se reconnecté sur le dernier SSID utilisé
+WiFi.setAutoConnect(true);   //OPTIONELLE: Si vrai le système, au boot, tente de se reconnecté sur le dernier SSID utilisé
 Serial.printf(".");
 WiFi.setAutoReconnect(true);  //OPTIONELLE: Si la connexion wifi est perdu le système tente automatique de se reconnecter (en tache de fond)
 Serial.printf(".");
