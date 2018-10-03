@@ -25,23 +25,16 @@ pinMode(IOPORTE,INPUT);
 pinMode(IOVERROU,INPUT);
 OldPorte = digitalRead(IOPORTE);
 OldVerrou = digitalRead(IOVERROU);
+Serial.begin(115200);
 Etat = ConfigWifiMonEsp();	//Paramétrage Wifi et initialisation connexion
 if (Etat<0) GerErreurs(Etat);
 }
 
 void loop(void){//__________________________LOOP________________________________
-String ReponseBrute;		// Variable String récupérant RepDomotics
-String EtatIDX = "";
+String ReponseBrute, EtatIDX = "";
 bool Porte, Verrou;
-
 Porte = digitalRead(IOPORTE);
 Verrou = digitalRead(IOVERROU);
-Serial.begin(115200);
-Serial.print("\n\n-------------------------------------------------------------\n\n");
-Serial.print("FC Porte = ");
-Serial.println(Porte);
-Serial.print("FC OldPorte = ");
-Serial.println(OldPorte);
 yield();
 
 if (OldPorte !=Porte){
@@ -55,6 +48,11 @@ if (OldPorte !=Porte){
 	ReponseBrute += ": ";
 	ReponseBrute += EtatIDX;
 	Serial.println(ReponseBrute);
+	Serial.print("FC Porte = ");
+	Serial.println(Porte);
+	Serial.print("FC OldPorte = ");
+	Serial.println(OldPorte);
+	Serial.print("\n==> Envoie commande à DOMOTICS\n");
 	ReponseBrute="";
 	if (true == Porte && String("On") != EtatIDX)	HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=1&switchcmd=On");
 	if (false == Porte && String("Off") != EtatIDX)	HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=1&switchcmd=Off");
