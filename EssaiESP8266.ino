@@ -21,7 +21,7 @@ bool OldPorte, OldVerrou;
 //DEMMARRAGE
 void setup(){//_________________________SETUP__________________________________
 int Etat=0;
-pinMode(IOPORTE,INPUT);
+pinMode(IOPORTE,INPUT_PULLUP);
 pinMode(IOVERROU,INPUT);
 OldPorte = digitalRead(IOPORTE);
 OldVerrou = digitalRead(IOVERROU);
