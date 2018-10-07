@@ -39,8 +39,8 @@ return ChaineAParser->substring(IndexDebut+1,IndexFin);
 
 
 void HTTPMonEsp(String *ReponseBrute, String Requette){
-Serial.printf("\nPause de 10sec.\n");
-delay(10000);
+Serial.printf("\nPause de 1sec.\n");
+delay(1000);
 
 WiFiClient client;    				// Cré un client wifi (je sais pas ce que ça veut dire ...)
 String Url;
