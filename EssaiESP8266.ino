@@ -8,7 +8,7 @@
 		IPAddress IPSTATIC
 		IPAddress PASSERELLE
 		IPAddress MaskNet	*/
-IPAddress IPSTATIC(192,168,1,107);	// Adresse IP de mon équipement !!-- A ADAPTER A CHAQUE COMPILATION, surtout EN MODE TEST --!!
+IPAddress IPSTATIC(192,168,1,206);	// Adresse IP de mon équipement !!-- A ADAPTER A CHAQUE COMPILATION, surtout EN MODE TEST --!!
 #include "GerErreurs.h"
 #include "HTTPMonEsp.h"
 #include "InitMonESPWifi.h"
@@ -23,19 +23,33 @@ String ReponseBrute, EtatIDX = "";
 //DEMMARRAGE
 void setup(){//_________________________SETUP__________________________________
 int Etat=0;
+String PrkReboot = "command&param=addlogmessage&message=";
 pinMode(IOPORTE,INPUT_PULLUP);
 pinMode(IOVERROU,INPUT);
 OldPorte = digitalRead(IOPORTE);
 OldVerrou = digitalRead(IOVERROU);
+
 Serial.begin(115200);
+Serial.print("\n\nRAISON DU BOOT: ");
+Serial.println(ESP.getResetReason());
 Etat = ConfigWifiMonEsp();	//Paramétrage Wifi et initialisation connexion
 if (Etat<0) GerErreurs(Etat);
-Serial.print("Synchronisation initiale entre état porte et état DOMOTICS\n");
+
+PrkReboot +="IDX";
+PrkReboot +=IDX_PORTE;
+PrkReboot +="_RebootReason_";
+PrkReboot += ESP.getResetReason();
+PrkReboot.replace(" ", "");
+Serial.println("INSCRIPTION DANS LOG DOMOTICS\n");
+HTTPMonEsp(&ReponseBrute,PrkReboot);
+//PrkReboot.equalsIgnoreCase("Software Watchdog")
+
+Serial.print("\nSYNCHRONISATION INITIALE ENTRE ETAT PORT ET DOMOTICS\n");
 EtatIDX	=	"devices&rid=";
 EtatIDX += IDX_PORTE;
 HTTPMonEsp(&ReponseBrute,EtatIDX);
 EtatIDX = ParseJson(&ReponseBrute,String(IDX_PORTE),"Data");	// String ParseJson(String MessageHHTP, String IDX_Cherché, String Champ recherché)
-ReponseBrute = "\nValeur de IDX_";
+ReponseBrute = "\nVALEUR DE IDX_";
 ReponseBrute += IDX_PORTE;
 ReponseBrute += ": ";
 ReponseBrute += EtatIDX;
@@ -59,7 +73,7 @@ if (OldPorte !=Porte){
 	EtatIDX += IDX_PORTE;
 	HTTPMonEsp(&ReponseBrute,EtatIDX);
 	EtatIDX = ParseJson(&ReponseBrute,String(IDX_PORTE),"Data");	// String ParseJson(String MessageHHTP, String IDX_Cherché, String Champ recherché)
-	ReponseBrute = "\nValeur de IDX_";
+	ReponseBrute = "\nVALEUR DE IDX_";
 	ReponseBrute += IDX_PORTE;
 	ReponseBrute += ": ";
 	ReponseBrute += EtatIDX;
@@ -68,7 +82,7 @@ if (OldPorte !=Porte){
 	Serial.println(Porte);
 	Serial.print("FC OldPorte = ");
 	Serial.println(OldPorte);
-	Serial.print("\n==> Envoie commande à DOMOTICS\n");
+	Serial.print("\n==> ENVOIE COMMANDE DOMOTICS\n");
 	ReponseBrute="";
 	if (true == Porte && String("On") != EtatIDX){
 		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=7&switchcmd=On");		//Faut vraiment faire une concaténation avec IDX_PORTE ...
