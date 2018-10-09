@@ -89,6 +89,8 @@ Serial.printf("Le serveur a repondu :-)\n");
 
 //LECTURE DU BUFFER HTTP
 client.readBytesUntil('\r',RepDomotics,sizeof(RepDomotics)); //A noter qu'il n'y a jamais de \r, ça doit s'arreter au timeout ...
+yield();
+client.flush();
 client.stop();
 *ReponseBrute=String(RepDomotics);	
 }
