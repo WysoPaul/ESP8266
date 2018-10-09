@@ -80,11 +80,17 @@ while (client.available() == 0) {
 }
 // Check HTTP status
 client.readBytesUntil('\r', status, sizeof(status));
-if (strcmp(status, "HTTP/1.1 200 OK") != 0)
+if (strcmp(status, "HTTP/1.1 200 OK") != 0){
+	Serial.println("Réponse Serveur:");
+	Serial.println(status);
 	GerErreurs(-30);
+}
 // Skip HTTP headers
-if (!client.find("\r\n\r\n"))
+if (!client.find("\r\n\r\n")){
+	Serial.println("Réponse Serveur:");
+	Serial.println(status);
 	GerErreurs(-30);
+}
 Serial.printf("Le serveur a repondu :-)\n");
 
 //LECTURE DU BUFFER HTTP
