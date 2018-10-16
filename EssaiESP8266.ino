@@ -25,7 +25,7 @@ void setup(){//_________________________SETUP__________________________________
 int Etat=0;
 String PrkReboot = "command&param=addlogmessage&message=";
 pinMode(IOPORTE,INPUT_PULLUP);
-pinMode(IOVERROU,INPUT);
+pinMode(IOVERROU,INPUT_PULLUP);
 OldPorte = digitalRead(IOPORTE);
 OldVerrou = digitalRead(IOVERROU);
 
@@ -65,7 +65,7 @@ if (true == OldPorte && String("On") != EtatIDX)	HTTPMonEsp(&ReponseBrute, "comm
 if (false == OldPorte && String("Off") != EtatIDX)	HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=7&switchcmd=Off");		// !!! Faut vraiment faire une concaténation avec IDX_PORTE ...
 
 //SYNCHRONISATION INITIALE ENTRE ETAT VERROU ET DOMOTICS
-Serial.print("\nSYNCHRONISATION INITIALE ENTRE ETAT PORT ET DOMOTICS\n");
+Serial.print("\nSYNCHRONISATION INITIALE ENTRE ETAT VERROU ET DOMOTICS\n");
 EtatIDX	=	"devices&rid=";
 EtatIDX += IDX_VERROU;
 HTTPMonEsp(&ReponseBrute,EtatIDX);
