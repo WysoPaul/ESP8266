@@ -13,25 +13,87 @@ IPAddress IPSTATIC(192,168,1,206);	// Adresse IP de mon équipement !!-- A ADAPT
 #include "HTTPMonEsp.h"
 #include "InitMonESPWifi.h"
 
-#define IOPORTE 13			// GPIO relié au capteur d'ouverture de porte
-#define IOVERROU 12			// GPIO relié au capteur du vérou de la porte
-#define IDX_PORTE 7		// Idem pour les IDX de Domotics
-#define IDX_VERROU 8
-bool OldPorte, OldVerrou;
-String ReponseBrute, EtatIDX = "";
+#define IOFENETRE 13	// GPIO relié à l'ILS qui détecte l'ouverture de la fenetre (HIGH = Fenetre ouverte / Aimant absent)
+#define IOBUZZER 14		// GPIO relié au Buzzer
+#define IDX_WC 7		// IDX define dans Domotics (## a mettre à jour)
+bool OldFenetre;		// ## Pour que ca marche avec un deepsleep il faudra sauvegardé la valeur entre les reboot (sinon il faudrait interrrogé Domotics à chaque (!) reveille :(  )
+int i_DureeOuvert;		// ## idem à sauvegarder dans la mémoire de la clock
 
 //DEMMARRAGE
 void setup(){//_________________________SETUP__________________________________
-int Etat=0;
-String PrkReboot = "command&param=addlogmessage&message=";
-pinMode(IOPORTE,INPUT_PULLUP);
-pinMode(IOVERROU,INPUT_PULLUP);
-OldPorte = digitalRead(IOPORTE);
-OldVerrou = digitalRead(IOVERROU);
 
+//Initialisation
+String ReponseBrute, EtatIDX = "";
+int Etat=0;		//Enregistre les retours des fonctions
+//String PrkReboot = "command&param=addlogmessage&message=";
+pinMode(IOFENETRE,INPUT_PULLUP);
+pinMode(IOBUZZER,OUTPUT);
+String S_boot=ESP.getResetReason();		//## Vérifier si c'est bien du String
 Serial.begin(115200);
+
+
+//Actions
+switch (S_boot){						//Vérifier si switch sur arduino gère les string
+		case DeepSleep:
+			//Actions in case of Deepsleep wake-up:
+			//Read Fenetre
+			//Si fenêtre fermé
+				//Si OldFenetre = Fenetre
+					//Sortie if et switch (pour atteindre Dodo ^_^ )
+				//Sinon (càd fenêtre était ouverte)
+					//Ecriture terminal
+					//Reset i_DureeOuvert
+					//Connexion Wifi
+					//Connexion Domotics
+					//Màj etat IDX => OFF
+					//MàJ tension alim
+			//Sinon (càd fenetre ouverte)
+				//Incrémentation DureeOuvert ...
+				//Si OldFenetre != Fenetre
+					//Ecriture terminal
+					//Connexion Wifi
+					//Connexion Domotics
+					//Màj etat IDX => ON
+					//MàJ tension alim
+				//Sinon rien
+			break;
+		case Watchdog:
+			//Actions in case of watchdog reboot:
+			//OldFenetre <= Fenetre
+			//i_DureeOuvert = 0
+			//Ecriture sur terminal série
+			//Connexion wifi
+			//Connexion Domotics
+			//Ecriture dans Log "boot reason"
+			//Màj etat IDX (ou Récupérer valeur et synchronisation ...)
+			//MàJ tension alim
+			//=> Dodo
+			break;
+		case Reset:
+			//Actions in case of reset:
+			//OldFenetre <= Fenetre
+			//i_DureeOuvert = 0
+			//Ecriture sur terminal série
+			//Connexion wifi
+			//Connexion Domotics
+			//Ecriture dans Log "boot reason"
+			//Màj etat IDX (ou Récupérer valeur et synchronisation ...)
+			//MàJ tension alim
+			//=> Dodo
+			break;
+		default:
+			//Default action
+}
+//Dodo ^_^
+
+
+
+
 Serial.print("\n\nRAISON DU BOOT: ");
-Serial.println(ESP.getResetReason());
+Serial.println(S_boot);
+	
+
+
 Etat = ConfigWifiMonEsp();	//Paramétrage Wifi et initialisation connexion
 if (Etat<0) GerErreurs(Etat);
 
@@ -64,32 +126,8 @@ ReponseBrute="";
 if (true == OldPorte && String("On") != EtatIDX)	HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=7&switchcmd=On");		// !!! Faut vraiment faire une concaténation avec IDX_PORTE ...
 if (false == OldPorte && String("Off") != EtatIDX)	HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=7&switchcmd=Off");		// !!! Faut vraiment faire une concaténation avec IDX_PORTE ...
 
-//SYNCHRONISATION INITIALE ENTRE ETAT VERROU ET DOMOTICS
-Serial.print("\nSYNCHRONISATION INITIALE ENTRE ETAT VERROU ET DOMOTICS\n");
-EtatIDX	=	"devices&rid=";
-EtatIDX += IDX_VERROU;
-HTTPMonEsp(&ReponseBrute,EtatIDX);
-EtatIDX = ParseJson(&ReponseBrute,String(IDX_VERROU),"Data");	// String ParseJson(String MessageHHTP, String IDX_Cherché, String Champ recherché)
-ReponseBrute = "\nVALEUR DE IDX_";
-ReponseBrute += IDX_VERROU;
-ReponseBrute += ": ";
-ReponseBrute += EtatIDX;
-Serial.println(ReponseBrute);
-Serial.print("FC OldVerrou = ");
-Serial.println(OldVerrou);
-ReponseBrute="";
-if (true == OldVerrou && String("On") != EtatIDX)	HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=8&switchcmd=On");		// !!! Faut vraiment faire une concaténation avec IDX_PORTE ...
-if (false == OldVerrou && String("Off") != EtatIDX)	HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=8&switchcmd=Off");		// !!! Faut vraiment faire une concaténation avec IDX_PORTE ...
-
-
-
-
-}
-
-void loop(void){//__________________________LOOP________________________________
-bool Porte, Verrou;
+bool Porte;
 Porte = digitalRead(IOPORTE);
-Verrou = digitalRead(IOVERROU);
 yield();
 
 //Control de Porte et action en fct
@@ -117,34 +155,10 @@ if (OldPorte !=Porte){
 	}
 	OldPorte = Porte;
 }
+//Dodo ^_^
 yield();
-
-//Control du verrou et action en fct
-if (OldVerrou !=Verrou){
-	//INTERROGATION DOMOTICS sur état IDX_VERROU
-	EtatIDX	=	"devices&rid=";
-	EtatIDX += IDX_VERROU;
-	HTTPMonEsp(&ReponseBrute,EtatIDX);
-	EtatIDX = ParseJson(&ReponseBrute,String(IDX_VERROU),"Data");	// String ParseJson(String MessageHHTP, String IDX_Cherché, String Champ recherché)
-	ReponseBrute = "\nVALEUR DE IDX_";
-	ReponseBrute += IDX_VERROU;
-	ReponseBrute += ": ";
-	ReponseBrute += EtatIDX;
-	Serial.println(ReponseBrute);
-	Serial.print("FC Verrou = ");
-	Serial.println(Verrou);
-	Serial.print("FC OldVerrou = ");
-	Serial.println(OldVerrou);
-	Serial.print("\n==> ENVOIE COMMANDE DOMOTICS\n");
-	ReponseBrute="";
-	if (true == Verrou && (String("On") != EtatIDX)){
-		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=8&switchcmd=On");		// !!! Faut vraiment faire une concaténation avec IDX_PORTE ...
-	}else if (false == Verrou && String("Off") != EtatIDX){
-		HTTPMonEsp(&ReponseBrute, "command&param=switchlight&idx=8&switchcmd=Off");		// !!! Faut vraiment faire une concaténation avec IDX_PORTE ...
-	}
-	OldVerrou = Verrou;
+delay(500); //a remplacer par un deep sleep
 }
-//Pause
-yield();
-delay(500);
+
+void loop(void){//__________________________LOOP________________________________
 }
