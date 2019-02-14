@@ -1,4 +1,5 @@
 #include <ESP8266WiFi.h>
+ADC_MODE(ADC_VCC);
 #include <ID-PSW.h>	/* Inclus les #define de:
 		NOMWIFI (SSID de mon réseau Wifi)
 		MDPWIFI (Mot de passe de mon réseau WiFi)
@@ -16,7 +17,7 @@ IPAddress IPSTATIC(192,168,1,206);	// Adresse IP de mon équipement !!-- A ADAPT
 #define IOFENETRE 13	// GPIO relié à l'ILS qui détecte l'ouverture de la fenetre (HIGH = Fenetre ouverte / Aimant absent)
 #define IOBUZZER 14		// GPIO relié au Buzzer
 #define IDX_WC 7		// IDX define dans Domotics (## a mettre à jour)
-bool OldFenetre;		// ## Pour que ca marche avec un deepsleep il faudra sauvegardé la valeur entre les reboot (sinon il faudrait interrrogé Domotics à chaque (!) reveille :(  )
+char OldFenetre = 0;		// ## Pour que ca marche avec un deepsleep il faudra sauvegardé la valeur entre les reboot (sinon il faudrait interrrogé Domotics à chaque (!) reveille :(  )
 int i_DureeOuvert;		// ## idem à sauvegarder dans la mémoire de la clock
 
 //DEMMARRAGE
@@ -28,13 +29,14 @@ int Etat=0;		//Enregistre les retours des fonctions
 //String PrkReboot = "command&param=addlogmessage&message=";
 pinMode(IOFENETRE,INPUT_PULLUP);
 pinMode(IOBUZZER,OUTPUT);
-String S_boot=ESP.getResetReason();		//## Vérifier si c'est bien du String
+String S_boot=ESP.getResetReason();		//C'est bien un String!
 Serial.begin(115200);
 
+Serial.println("Tension alim: ");
+Serial.println(ESP.getVcc());
 
 //Actions
-switch (S_boot){						//Vérifier si switch sur arduino gère les string
-		case DeepSleep:
+if(String("Deep-Sleep Wake")==S_boot){						//Vérifier si switch sur arduino gère les string
 			//Actions in case of Deepsleep wake-up:
 			//Read Fenetre
 			//Si fenêtre fermé
@@ -56,20 +58,7 @@ switch (S_boot){						//Vérifier si switch sur arduino gère les string
 					//Màj etat IDX => ON
 					//MàJ tension alim
 				//Sinon rien
-			break;
-		case Watchdog:
-			//Actions in case of watchdog reboot:
-			//OldFenetre <= Fenetre
-			//i_DureeOuvert = 0
-			//Ecriture sur terminal série
-			//Connexion wifi
-			//Connexion Domotics
-			//Ecriture dans Log "boot reason"
-			//Màj etat IDX (ou Récupérer valeur et synchronisation ...)
-			//MàJ tension alim
-			//=> Dodo
-			break;
-		case Reset:
+}else if(String("External System")==S_boot){
 			//Actions in case of reset:
 			//OldFenetre <= Fenetre
 			//i_DureeOuvert = 0
@@ -80,13 +69,31 @@ switch (S_boot){						//Vérifier si switch sur arduino gère les string
 			//Màj etat IDX (ou Récupérer valeur et synchronisation ...)
 			//MàJ tension alim
 			//=> Dodo
-			break;
-		default:
-			//Default action
 }
+//		ElseIFcase "Software Watchdog":
+			//Actions in case of watchdog reboot:
+			//OldFenetre <= Fenetre
+			//i_DureeOuvert = 0
+			//Ecriture sur terminal série
+			//Connexion wifi
+			//Connexion Domotics
+			//Ecriture dans Log "boot reason"
+			//Màj etat IDX (ou Récupérer valeur et synchronisation ...)
+			//MàJ tension alim
+			//=> Dodo
+
 //Dodo ^_^
 
-
+//Petit bout de code pour lire et ecrire mémoire ...
+ESP.rtcUserMemoryRead(32, (uint32_t*)  &OldFenetre, sizeof(OldFenetre));
+Serial.println("Valeur en memoire: ");
+Serial.println(OldFenetre);
+Serial.println("Incrementation de val memoire de +1");
+OldFenetre += 1;
+ESP.rtcUserMemoryWrite(32, (uint32_t*) &OldFenetre, sizeof(OldFenetre));
+ESP.rtcUserMemoryRead(32, (uint32_t*) &OldFenetre, sizeof(OldFenetre));
+Serial.println("Nouvelle valeur en memoire: ");
+Serial.println(OldFenetre);
 
 
 Serial.print("\n\nRAISON DU BOOT: ");
