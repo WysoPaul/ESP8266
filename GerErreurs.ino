@@ -54,6 +54,8 @@ switch (CodeErr){
 		break;	
 	default:
 		Serial.printf("!!! Erreur inconnue !!!\n");
+		Serial.printf("Code erreur: ");
+		Serial.println(CodeErr);
 		DureeSommeille = 10;
 		//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=!!!'Poule': Erreur inconnue");				//ReponseBrute est pas déclarer #ToDo voir comment corrigé ça...
 		break;		
