@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 ADC_MODE(ADC_VCC);								//Pour activer la fonction lecture tension alimentation
-#include <ID-PSW.h>	/* Inclus les #define de:
+//#include <ID-PSW.h>
+#include "ID-PSW.h"	/* Inclus les #define de:
 		NOMWIFI (SSID de mon réseau Wifi)
 		MDPWIFI (Mot de passe de mon réseau WiFi)
 		DOMOTICS (adresse IP sous format texte de mon serveur)
@@ -12,11 +13,11 @@ ADC_MODE(ADC_VCC);								//Pour activer la fonction lecture tension alimentatio
 #include "HTTPMonEsp.h"
 #include "InitMonESPWifi.h"
 
-IPAddress IPSTATIC(192,168,1,206);		// Adresse IP de mon équipement !!-- A ADAPTER A CHAQUE COMPILATION, surtout EN MODE TEST --!!
+//IPAddress IPSTATIC(192,168,1,206);		// Adresse IP de mon équipement !!-- A ADAPTER A CHAQUE COMPILATION, surtout EN MODE TEST --!!
 #define IOCAPTEUR 13					// GPIO relié à l'ILS qui détecte l'ouverture de la fenetre (HIGH = Fenetre ouverte / Aimant absent)
 #define IOBUZZER 14						// GPIO relié au Buzzer
-#define IDX1 7							// IDX define dans Domotics (### a mettre à jour ###)
-#define DEEPSLEEP_DURATION 300000000	// En microseconds 300 000 000 = 5mn
+#define IDX1 20							// IDX define dans Domotics (### a mettre à jour ###)
+#define DEEPSLEEP_DURATION 20000000	// En microseconds 300 000 000 = 5mn, 20 000 000 = 20Sec
 #define DUREE_OUVERT_MAX 3				// Nombre de cycles de DeepSLeep avec capteur actif qui entrainent une action
 
 void Notification(uint32_t* NbCycles);
@@ -41,8 +42,15 @@ b_EtatCapteur1 = digitalRead(IOCAPTEUR);
 S_MessageIDX = "command&param=switchlight&idx=" + String(IDX1) + "&switchcmd=";
 S_MessageLog = "command&param=addlogmessage&message=";
 
-//######### A Faire ############
-//Lire b_OldEtatCapteur1 et ui32_DureeOuvert dans la mémoire RTC
+//DEBUG
+Serial.printf("---- Variable avant lecture memoire -----");
+Serial.printf("Old etat capteur: ");
+Serial.println(b_OldEtatCapteur1);
+Serial.printf("Nb Cycles: ");
+Serial.println(ui32_DureeOuvert);
+
+
+Serial.printf("---- Lecture memoire -----");
 ReadBoolMemRtc(1, b_OldEtatCapteur1);
 ESP.rtcUserMemoryRead(32 + 2, (uint32_t*) &ui32_DureeOuvert, sizeof(ui32_DureeOuvert));
 
@@ -57,28 +65,34 @@ Serial.printf("Etat capteur: ");
 Serial.println(b_EtatCapteur1);
 Serial.printf("Old etat capteur: ");
 Serial.println(b_OldEtatCapteur1);
+Serial.printf("Nb Cycles: ");
+Serial.println(ui32_DureeOuvert);
+
+
 yield();
 
 //Choix actions
 if(String("Deep-Sleep Wake") == S_PrkReboot){				//Actions in case of Deepsleep wake-up:
 			if(true == b_EtatCapteur1){						//Fenêtre est fermé
-				if(b_EtatCapteur1 = b_OldEtatCapteur1){		//La fenetre est et était fermé
+				if(b_EtatCapteur1 == b_OldEtatCapteur1){		//La fenetre est et était fermé
 					//Dodo ^_^
 					ESP.deepSleep((uint32_t)DEEPSLEEP_DURATION,WAKE_NO_RFCAL);
 				}
 				else{										//On vient de fermer la fenêtre
 					ui32_DureeOuvert = 0;
+					b_OldEtatCapteur1 = b_EtatCapteur1;
 					S_MessageIDX +="Off";
 				}
 			}else{											//càd fenetre est ouverte
 				ui32_DureeOuvert += 1;							// !!!!!!!!!!!!!!! risque de saturer la variable !!!!!!!!!!!!
 				if (ui32_DureeOuvert > DUREE_OUVERT_MAX) Notification(&ui32_DureeOuvert);
-				if(b_EtatCapteur1 = b_OldEtatCapteur1){		//càd fenêtre est et était ouverte
+				if(b_EtatCapteur1 == b_OldEtatCapteur1){		//càd fenêtre est et était ouverte
 					//Dodo ^_^
 					ESP.deepSleep((uint32_t)DEEPSLEEP_DURATION,WAKE_NO_RFCAL);
 				}
 				else{										//càd fenêtre était fermé et on vient de l'ouvrir
-					S_MessageIDX +="Off";
+					b_OldEtatCapteur1 = b_EtatCapteur1;
+					S_MessageIDX +="On";
 				}
 			}
 }else if(String("External System") == S_PrkReboot){			//Actions in case of real reboot:
