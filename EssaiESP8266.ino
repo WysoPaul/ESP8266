@@ -42,17 +42,16 @@ b_EtatCapteur1 = digitalRead(IOCAPTEUR);
 S_MessageIDX = "command&param=switchlight&idx=" + String(IDX1) + "&switchcmd=";
 S_MessageLog = "command&param=addlogmessage&message=";
 
-//DEBUG
-Serial.printf("---- Variable avant lecture memoire -----");
-Serial.printf("Old etat capteur: ");
-Serial.println(b_OldEtatCapteur1);
-Serial.printf("Nb Cycles: ");
-Serial.println(ui32_DureeOuvert);
+Serial.println("\n\n---- Variable avant lecture memoire -----");		//DEBUG
+Serial.printf("Old etat capteur: ");		//DEBUG
+Serial.println(b_OldEtatCapteur1);		//DEBUG
+Serial.printf("Nb Cycles: ");		//DEBUG
+Serial.println(ui32_DureeOuvert);		//DEBUG
 
 
-Serial.printf("---- Lecture memoire -----");
+Serial.printf("---- Lecture memoire -----");		//DEBUG
 ReadBoolMemRtc(1, b_OldEtatCapteur1);
-ESP.rtcUserMemoryRead(32 + 2, (uint32_t*) &ui32_DureeOuvert, sizeof(ui32_DureeOuvert));
+ESP.rtcUserMemoryRead((32 + 2), (uint32_t*) &ui32_DureeOuvert, sizeof(ui32_DureeOuvert));
 
 
 //DEBUG affiche sur le terminal
@@ -75,22 +74,26 @@ yield();
 if(String("Deep-Sleep Wake") == S_PrkReboot){				//Actions in case of Deepsleep wake-up:
 			if(true == b_EtatCapteur1){						//Fenêtre est fermé
 				if(b_EtatCapteur1 == b_OldEtatCapteur1){		//La fenetre est et était fermé
+					Serial.println("La fenetre est et etait FERMEE");		//DEBUG
 					//Dodo ^_^
 					ESP.deepSleep((uint32_t)DEEPSLEEP_DURATION,WAKE_NO_RFCAL);
 				}
 				else{										//On vient de fermer la fenêtre
+					Serial.println("On vient de FERMER la fenetre");		//DEBUG
 					ui32_DureeOuvert = 0;
 					b_OldEtatCapteur1 = b_EtatCapteur1;
 					S_MessageIDX +="Off";
 				}
-			}else{											//càd fenetre est ouverte
+			}else{											//càd La fenetre est ouverte
 				ui32_DureeOuvert += 1;							// !!!!!!!!!!!!!!! risque de saturer la variable !!!!!!!!!!!!
 				if (ui32_DureeOuvert > DUREE_OUVERT_MAX) Notification(&ui32_DureeOuvert);
-				if(b_EtatCapteur1 == b_OldEtatCapteur1){		//càd fenêtre est et était ouverte
+				if(b_EtatCapteur1 == b_OldEtatCapteur1){		//càd La fenêtre est et était ouverte
+					Serial.println("La fenetre est et etait OUVERTE");		//DEBUG
 					//Dodo ^_^
 					ESP.deepSleep((uint32_t)DEEPSLEEP_DURATION,WAKE_NO_RFCAL);
 				}
 				else{										//càd fenêtre était fermé et on vient de l'ouvrir
+					Serial.println("On vient d'OUVRIR la fenetre");		//DEBUG
 					b_OldEtatCapteur1 = b_EtatCapteur1;
 					S_MessageIDX +="On";
 				}
@@ -101,8 +104,10 @@ if(String("Deep-Sleep Wake") == S_PrkReboot){				//Actions in case of Deepsleep 
 			S_MessageLog += IDX1;
 			S_MessageLog += "__Coupure_Alim__";
 			if(true == b_EtatCapteur1){
+				Serial.println("Reboot, fenêtre FERMEE");		//DEBUG
 				S_MessageIDX +="Off";
 			}else{
+				Serial.println("Reboot, fenêtre OUVERTE");		//DEBUG
 				S_MessageIDX +="On";
 			}
 }
@@ -128,9 +133,23 @@ if (S_MessageLog != "command&param=addlogmessage&message=") HTTPMonEsp(&S_Repons
 
 
 //Ecrire b_OldEtatCapteur1 et ui32_DureeOuvert dans la mémoire RTC
+Serial.println("Ecriture memoire");		//DEBUG
+Serial.printf("b_OldEtatCapteur1: ");		//DEBUG
+Serial.println(b_OldEtatCapteur1);		//DEBUG
+Serial.printf("ui32_DureeOuvert: ");		//DEBUG
+Serial.println(ui32_DureeOuvert);		//DEBUG
+
 WriteBoolMemRtc(1,b_OldEtatCapteur1);
 ESP.rtcUserMemoryWrite(32 + 1, (uint32_t*) &ui32_DureeOuvert, sizeof(ui32_DureeOuvert));
 
+Serial.println("Relecture memoire");		//DEBUG
+ReadBoolMemRtc(1, b_OldEtatCapteur1);		//DEBUG
+ESP.rtcUserMemoryRead((32 + 2), (uint32_t*) &ui32_DureeOuvert, sizeof(ui32_DureeOuvert));		//DEBUG
+Serial.printf("b_OldEtatCapteur1: ");		//DEBUG
+Serial.println(b_OldEtatCapteur1);		//DEBUG
+Serial.printf("ui32_DureeOuvert: ");		//DEBUG
+Serial.println(ui32_DureeOuvert);		//DEBUG
+Serial.println("Dodo ^_^");		//DEBUG
 //Dodo ^_^
 ESP.deepSleep((uint32_t)DEEPSLEEP_DURATION,WAKE_NO_RFCAL);
 //### Réflechire au différent mode de Wake ... en fonction des endroits ou on s'endore
