@@ -20,12 +20,12 @@ ADC_MODE(ADC_VCC);								//Pour activer la fonction lecture tension alimentatio
 //---------------------------
 //Macro de compilation
 //---------------------------
-	#define BAVARD
-	#define PWIDEBUG
+	//#define BAVARD
+	//#define PWIDEBUG
 
 #ifdef PWIDEBUG
 	#ifndef BAVARD
-	#define BAVARD
+		#define BAVARD
 	#endif
 #endif
 
@@ -46,7 +46,7 @@ ADC_MODE(ADC_VCC);								//Pour activer la fonction lecture tension alimentatio
 void Notification(char* NbCycles);
 void ReadBoolMemRtc(char Offset, boolean ValBinaire );
 void WriteBoolMemRtc(char Offset, boolean ValBinaire);
-
+void AfficherMemRtc(); //Fonction pour le debug ...
 
 
 void setup(){//_________________________SETUP__________________________________
@@ -206,15 +206,47 @@ void loop(void){//__________________________LOOP________________________________
 }
 
 void Notification(char* NbCycles){
-	tone(14,500);
-	delay(1000);
-	tone(14,1000);
-	delay(1000);
+for(int i= 0;i<20;i++){
+	tone(14,20);
+	delay(300);
 	noTone(14);
-	//&&&&&&&&& A Faire &&&&&&&&&
-	//Il faut envoyer une notification a Domoticz
-	//Ou mieux traiter le critère dans domoticz et monitorer une variable dans Domoticz pour déclencher le buzzer (... peut consommer plus de batteries)
+	tone(14,1000);
+	delay(300);
 }
+delay(1000);
+noTone(14);
+//&&&&&&&&& A Faire &&&&&&&&&
+//Il faut envoyer une notification a Domoticz
+//Ou mieux traiter le critère dans domoticz et monitorer une variable dans Domoticz pour déclencher le buzzer (... peut consommer plus de batteries)
+}
+
+
+#ifdef PWIDEBUG
+	void AfficherMemRtc(){
+	char charVar;
+	Serial.println("\n----------------- DUMP BRUT memoir RTC");
+	for(int i = 1; i<127;i++){
+		ESP.rtcUserMemoryRead(i, (uint32_t*)&charVar, sizeof(charVar));
+		Serial.print(charVar,HEX);
+	}
+
+	Serial.println("\n----------------- DUMP formaté memoir RTC");
+	for(int i = 1; i<127;i++){
+		ESP.rtcUserMemoryRead(i, (uint32_t*)&charVar, sizeof(charVar));
+		if(0 == charVar){
+			Serial.print("00");
+		}else{
+			if(charVar<16){
+				Serial.print("0");
+				Serial.print(charVar,HEX);
+			}else{
+				Serial.print(charVar,HEX);
+			}
+		}
+		if(0==(i%4)) Serial.printf("\n");
+	}
+	}
+#endif
 
 /*  Rappel pour utiliser la fonction parse de JSON
 HTTPMonEsp(&S_ReponseBrute,EtatIDX);
