@@ -49,13 +49,17 @@ unsigned long Timeout;
 char status[32] = {0};				// C'est là qu'on va stoqué l'info que le serveur à bien compris la question #ToDo ça dois pouvoir être optimisé
 char RepDomotics[2000]={0};			// Variable Char stockant la réponse HTTP du serveur
 
-//CONNECTION DOMOTICS
-Serial.printf("Tentative de connexion a %s\n",DOMOTICS);
+#ifdef PWIDEBUG
+	//CONNECTION DOMOTICS
+	Serial.printf("Tentative de connexion a %s\n",DOMOTICS);
+#endif
 if (client.connect(DOMOTICS,PORT)<0) {   //On réalise la connection au serveur:port, si elle est réussi on poursuit
       client.stop();
       GerErreurs(-10);
   }
-Serial.printf("Le serveur est disponible :-) \n");
+#ifdef PWIDEBUG
+	Serial.printf("Le serveur est disponible :-) \n");
+#endif
 
 //ENVOIS COMMANDE HTTP
 //Constitution de la requette. Si j'utilise pas la fonction String("") j'ai une erreur de compilation ...
@@ -64,8 +68,11 @@ Url= String("GET /json.htm?type=") + Requette + " HTTP/1.1\r\n" +
 "Connection: Close\r\n" +
 "\r\n";
 
+#ifdef PWIDEBUG
 Serial.printf("\nEnvois a \"%s\" la requette: [...] ",DOMOTICS);
 Serial.println(Requette);                                //#TODO Je voulais fusionner ces deux lignes (printf et println) en utilisant %c ou %s mais j'ai des erreurs de compilation => ????
+#endif
+
 client.print(Url);
 
 
@@ -91,7 +98,9 @@ if (!client.find("\r\n\r\n")){
 	Serial.println(status);
 	GerErreurs(-30);
 }
-Serial.printf("Le serveur a repondu :-)\n");
+#ifdef PWIDEBUG
+	Serial.printf("Le serveur a repondu :-)\n");
+#endif
 
 //LECTURE DU BUFFER HTTP
 client.readBytesUntil('\r',RepDomotics,sizeof(RepDomotics)); //A noter qu'il n'y a jamais de \r, ça doit s'arreter au timeout ...
