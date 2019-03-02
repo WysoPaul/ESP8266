@@ -36,8 +36,9 @@ ADC_MODE(ADC_VCC);								//Pour activer la fonction lecture tension alimentatio
 #define IOCAPTEUR 13					// GPIO relié à l'ILS qui détecte l'ouverture de la fenetre (HIGH = Fenetre ouverte / Aimant absent)
 #define IOBUZZER 14						// GPIO relié au Buzzer
 #define IDX1 20							// IDX define dans Domotics (### a mettre à jour ###)
-#define DEEPSLEEP_DURATION 20000000	// En microseconds 300 000 000 = 5mn, 20 000 000 = 20Sec
-#define DUREE_OUVERT_MAX 3				// Nombre de cycles de DeepSLeep avec capteur actif qui entrainent une action
+#define DEEPSLEEP_DURATION 300000000	// En microseconds 300 000 000 = 5mn, 20 000 000 = 20Sec
+#define DIVDUREE 5						// DEEPSLEEP_DURATION/DIVDUREE qd la fenêtre est et etait ouverte
+#define DUREE_OUVERT_MAX 5				// Nombre de cycles de DeepSLeep avec capteur actif qui entrainent une action
 
 
 //---------------------------
@@ -96,7 +97,7 @@ yield();
 //Choix actions
 if(String("Deep-Sleep Wake") == S_PrkReboot){					//Actions in case of Deepsleep wake-up:
 			
-			if(1 == c_EtatCapteur1){							//La fenêtre est FERME
+			if(0 == c_EtatCapteur1){							//La fenêtre est FERME (L'aimant est Present, ILS fermé sur GND)
 				if(c_EtatCapteur1 == c_OldEtatCapteur1){
 					#ifdef BAVARD
 						Serial.println("La fenetre EST ET ETAIT fermee.\n Dodo ^_^");
@@ -112,7 +113,7 @@ if(String("Deep-Sleep Wake") == S_PrkReboot){					//Actions in case of Deepsleep
 					S_MessageIDX +="Off";
 				}
 			
-			}else{												//La fenetre est OUVERTE
+			}else{												//La fenetre est OUVERTE (l'aimant esst absent, ILS ouvert, entrée PULL UP)
 				c_DureeOuvert += 1;								// !!! risque de saturer la variable: MAX 255 !!!
 				ESP.rtcUserMemoryWrite(2, (uint32_t*) &c_DureeOuvert, sizeof(c_DureeOuvert));
 				if (c_DureeOuvert > DUREE_OUVERT_MAX) Notification(&c_DureeOuvert);
@@ -121,7 +122,7 @@ if(String("Deep-Sleep Wake") == S_PrkReboot){					//Actions in case of Deepsleep
 					#ifdef BAVARD
 						Serial.println("La fenetre EST ET ETAIT ouverte.\n Dodo ^_^");
 					#endif
-					ESP.deepSleep((uint32_t)DEEPSLEEP_DURATION,WAKE_NO_RFCAL);
+					ESP.deepSleep((uint32_t)DEEPSLEEP_DURATION/DIVDUREE,WAKE_NO_RFCAL);
 				}
 				else{
 					#ifdef BAVARD
@@ -137,7 +138,7 @@ if(String("Deep-Sleep Wake") == S_PrkReboot){					//Actions in case of Deepsleep
 			S_MessageLog += IDX1;
 			S_MessageLog += S_PrkReboot;
 			//S_MessageLog += "__Coupure_Alim__";
-			if(1 == c_EtatCapteur1){
+			if(0 == c_EtatCapteur1){
 				#ifdef BAVARD
 					Serial.println("Reboot, fenêtre FERMEE");
 				#endif
@@ -152,7 +153,7 @@ if(String("Deep-Sleep Wake") == S_PrkReboot){					//Actions in case of Deepsleep
 /*		ElseIFcase "Software Watchdog":
 			c_OldEtatCapteur1 = c_EtatCapteur1;
 			c_DureeOuvert=0;
-			if(1 == c_EtatCapteur1){
+			if(0 == c_EtatCapteur1){
 				S_MessageIDX +="Off";
 			}else{
 				S_MessageIDX +="On";
@@ -172,7 +173,7 @@ yield();
 i_RetourEtatFcts = ConfigWifiMonEsp();							//Paramétrage Wifi et initialisation connexion
 if (i_RetourEtatFcts<0) GerErreurs(i_RetourEtatFcts);
 HTTPMonEsp(&S_ReponseBrute,S_MessageIDX);						//Màj de Domotics avec etat IDX
-//HTTPMonEsp(&S_ReponseBrute,S_MessageIDX);						//Màj de Domotics avec tension alim &&&&&&&&& A Faire &&&&&&&&&
+//HTTPMonEsp(&S_ReponseBrute,S_MessageIDX);						//Màj de Domotics avec tension alim &&&&&&&&& A Faire &&&&&&&&& (rajouter paramètre &battery=XXX (0-100, 255 = Nobatt)
 S_MessageLog.replace(" ", "");
 if (S_MessageLog != "command&param=addlogmessage&message=") HTTPMonEsp(&S_ReponseBrute,S_MessageLog);	//Ecriture message LOG qd necessaire
 
