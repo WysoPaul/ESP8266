@@ -22,6 +22,8 @@ ADC_MODE(ADC_VCC);								//Pour activer la fonction lecture tension alimentatio
 //---------------------------
 	//#define BAVARD
 	//#define PWIDEBUG
+	#define PWITEST
+	#define BATTERIE
 
 #ifdef PWIDEBUG
 	#ifndef BAVARD
@@ -72,6 +74,11 @@ S_MessageLog = "command&param=addlogmessage&message=";
 //&&&&&&&&& Il serait interessant de formellement/explicitement couper le modem/WIFI par défaut ... &&&&&&&&&
 
 
+#ifdef PWITEST
+	tone(14,20);
+	delay(200);
+	noTone(14);
+#endif
 #ifdef PWIDEBUG 
 	Serial.println("\n\n## ---- Variable avant lecture memoire -----");
 	Serial.printf("## Old etat capteur: %d\n",c_OldEtatCapteur1);
@@ -161,6 +168,16 @@ if(String("Deep-Sleep Wake") == S_PrkReboot){					//Actions in case of Deepsleep
 			S_MessageLog += IDX1;
 			S_MessageLog +="__W_A_T_C_H_D_O_G__"
 */			
+#ifdef PWITEST
+	tone(14,20);
+	delay(100);
+	noTone(14);
+	delay(100);	
+	tone(14,20);
+	delay(100);
+	noTone(14);
+#endif
+
 #ifdef BAVARD
 	Serial.printf("\nEnvois à Domotics\n");
 	Serial.println(S_MessageIDX);
@@ -169,11 +186,22 @@ if(String("Deep-Sleep Wake") == S_PrkReboot){					//Actions in case of Deepsleep
 	delay(2000);
 #endif
 
+#ifdef BATTERIE													//Envoyer à Domotics l'état de la batterie en %
+	i_Alim = i_Alim * 100 / 3000;
+	S_MessageIDX += "&rssi=10&battery=";						//Note: champs RSSI = val défaut
+	S_MessageIDX += i_Alim;										//Batt: [0-100], 255 = No batt
+	#ifdef BAVARD
+		Serial.printf("\nPresence batteries\nTension alim: %d%%\n",i_Alim);
+		Serial.printf("Màj message > Domoticz:\n");
+		Serial.println(S_MessageIDX);
+		delay(3000);
+	#endif
+#endif
+
 yield();
 i_RetourEtatFcts = ConfigWifiMonEsp();							//Paramétrage Wifi et initialisation connexion
 if (i_RetourEtatFcts<0) GerErreurs(i_RetourEtatFcts);
 HTTPMonEsp(&S_ReponseBrute,S_MessageIDX);						//Màj de Domotics avec etat IDX
-//HTTPMonEsp(&S_ReponseBrute,S_MessageIDX);						//Màj de Domotics avec tension alim &&&&&&&&& A Faire &&&&&&&&& (rajouter paramètre &battery=XXX (0-100, 255 = Nobatt)
 S_MessageLog.replace(" ", "");
 if (S_MessageLog != "command&param=addlogmessage&message=") HTTPMonEsp(&S_ReponseBrute,S_MessageLog);	//Ecriture message LOG qd necessaire
 
