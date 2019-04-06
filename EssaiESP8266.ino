@@ -14,7 +14,7 @@ IPAddress IPSTATIC(192,168,1,206);	// Adresse IP de mon équipement !!-- A ADAPT
 #include "InitMonESPWifi.h"
 
 #define IOPORTE 13			// GPIO relié au capteur d'ouverture de porte
-#define IOVERROU 12			// GPIO relié au capteur du vérou de la porte
+#define IOVERROU 14			// GPIO relié au capteur du vérou de la porte (6/4/19: IO12 cramé, passage à IO14)
 #define IDX_PORTE 7		// Idem pour les IDX de Domotics
 #define IDX_VERROU 8
 bool OldPorte, OldVerrou;
