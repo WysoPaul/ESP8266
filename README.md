@@ -2,8 +2,8 @@
 L'ESP8266 pour interfacer avec ma domotique
 
 !!! BROCHAGE DIFFERENT pour POULES et Maquette !!!!
-Poules IN1=12, IN2=13, IN3=09, IN4=10
-Maquette IN1 12, IN2 14, IN3 4, IN4 5
+Poules IO1=12, IO2=13, IO3=09, Io4=10
+Maquette IO1 12, IO2 14, IO3 4, IO4 5
 
 Paramètres à changer dans le StepperPWI.h
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

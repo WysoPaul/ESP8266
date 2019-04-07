@@ -14,8 +14,8 @@ Enfin, un /s répertoir peut contenir des sketch d'exemple
 */
 /*
 !!! BROCHAGE DIFFERENT pour POULES et Maquette !!!!
-Poules IN1=12, IN2=13, IN3=09, IN4=10
-Maquette IN1 12, IN2 14, IN3 4, IN4 5
+Poules IO1=12, IO2=13, IO3=09, IO4=10
+Maquette IO1 12, IO2 14, IO3 4, IO4 5
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 */
 
@@ -23,10 +23,10 @@ Maquette IN1 12, IN2 14, IN3 4, IN4 5
 #ifndef StepperPWI_h
 #define StepperPWI_h
 //Déclaration des pins utilisé par le stepper
-#define IN1 12
-#define IN2 13
-#define IN3 9
-#define IN4 10
+#define IO1 12
+#define IO2 13
+#define IO3 9
+#define IO4 10
 
 void TournerMoteur(boolean,int,int);	//Commenté car problème de compilation
 void WriteStep(int OutArray[4]);		//Commenté car problème de compilation

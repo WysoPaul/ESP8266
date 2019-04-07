@@ -64,8 +64,8 @@ WriteStep(ArrayDefault);
 }
 
 void WriteStep(int OutArray[4]) {
-  digitalWrite(IN1, OutArray[0]);
-  digitalWrite(IN2, OutArray[1]);
-  digitalWrite(IN3, OutArray[2]);
-  digitalWrite(IN4, OutArray[3]);
+  digitalWrite(IO1, OutArray[0]);
+  digitalWrite(IO2, OutArray[1]);
+  digitalWrite(IO3, OutArray[2]);
+  digitalWrite(IO4, OutArray[3]);
 }
