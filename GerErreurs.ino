@@ -40,18 +40,23 @@ switch (CodeErr){
 	case -100:
 		Serial.print("Reponse domoticz innatendu\n");	
 		DureeSommeille = 10;
-		//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=!!!'Poule': Réponse Domotics Innatendu");	//ReponseBrute est pas déclarer #ToDo voir comment corrigé ça...
+		//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=ERREUR__Poule:_Réponse_Domotics_Innatendu");	//ReponseBrute est pas déclarer #ToDo voir comment corrigé ça...
 		break;
 	case -200:
 		Serial.print("La commande envoye n'a pas ete prise en compte par Domotics\n");	
 		DureeSommeille = 10;
-		//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=!!!'Poule': Commande non pris en compte");	//ReponseBrute est pas déclarer #ToDo voir comment corrigé ça...
+		//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=ERREUR__Poule:_Commande_non_pris_en_compte");	//ReponseBrute est pas déclarer #ToDo voir comment corrigé ça...
 		break;
 	case -1000:
 		Serial.print("Problem au moment du parse\n");	
 		DureeSommeille = 10;
-		//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=!!!'Poule': PB Parse JSON");					//ReponseBrute est pas déclarer #ToDo voir comment corrigé ça...
-		break;	
+		//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=ERREUR__Poule:_PB_Parse_JSON");					//ReponseBrute est pas déclarer #ToDo voir comment corrigé ça...
+		break;
+	case -10001:		//10 000 Problèmes capteurs, 10001 => Pb DHT
+		Serial.print("Trop d'erreur lecture sonde DHT\n");	
+		DureeSommeille = 10;
+		//HTTPMonEsp(&ReponseBrute,"command&param=addlogmessage&message=ERREUR__Poule:_Trop_Erreur_DHT");					//ReponseBrute est pas déclarer #ToDo voir comment corrigé ça...
+		break;
 	default:
 		Serial.printf("!!! Erreur inconnue !!!\n");
 		DureeSommeille = 10;
