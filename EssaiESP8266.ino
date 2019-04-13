@@ -24,6 +24,8 @@ DHT dht(DHTPIN, DHTTYPE);	//Structure(?!) de la lib DHT ...
 #define IDX_EtatP 24		// IDX 24= RetourEtatPortePoules
 #define IDX_Consigne 25		// IDX 25= ConsignePortePoules
 
+#define VITESSE 900			// 1'30" pour les 24tours
+#define NBTOUR (4095*24)
 
 
 String ReponseBrute;		//Variable globale String pour les requète HTTP récupérant RepDomotics  ... c'est moche mais
@@ -53,18 +55,19 @@ if (Etat<0) GerErreurs(Etat);
 }
 
 void loop(void){//__________________________LOOP________________________________
-//String ReponseBrute;				// Variable String récupérant RepDomotics
+
 String Etat24 = String(IDX_EtatP), Etat25= String(IDX_Consigne);	// IDX 24= RetourEtatPortePoules, IDX 25= ConsignePortePoules
 String Msg="";
 
 //INTERROGATION DOMOTICS
+ReponseBrute="";
 Msg = "devices&rid=" + String(IDX_EtatP);
 HTTPMonEsp(&ReponseBrute,Msg);
 Etat24 = ParseJson(&ReponseBrute,String(Etat24),"Data"); //IDX 24= EtatPortePoules
 Serial.printf("\nValeur de Etat24: ");
 Serial.println(Etat24);
-ReponseBrute="";
 
+ReponseBrute="";
 Msg = "devices&rid=" + String(IDX_Consigne);
 HTTPMonEsp(&ReponseBrute,Msg);
 Etat25 = ParseJson(&ReponseBrute,String(Etat25),"Data"); //IDX 25= ConsignePortePoules
@@ -77,13 +80,13 @@ ReponseBrute="";
 if (Etat24!=Etat25){
 	if (Etat25=="On"){
 		Serial.printf("Domoticz demande \"ON\" => Tourner moteur dans le sens horaire\n");
-		TournerMoteur(false,5*4095,1400);  //(Cw, NbSteps: 4095 = 1tour, Speed) 900-1000 avec le reducteur (32-33 tours moteur => 1 tour)
+		TournerMoteur(false,NBTOUR,VITESSE);  //(Cw, NbSteps: 4095 = 1tour, Speed € [900-1000])
 		Serial.printf("Fin de rotation moteur.\nMaJ Domotics...\n");
 		Msg = "command&param=switchlight&idx=" + String(IDX_EtatP) + "&switchcmd=On";
 		HTTPMonEsp(&ReponseBrute, Msg);
 	}else if (Etat25=="Off"){
 		Serial.print("Domoticz demande \"OFF\" => Tourner moteur dans le sens ANTI-horaire\n");
-		TournerMoteur(true,5*4095,1400);
+		TournerMoteur(true,NBTOUR,VITESSE);
 		Serial.printf("Fin de rotation moteur.\nMaJ Domotics...\n");
 		Msg = "command&param=switchlight&idx=" +  String(IDX_EtatP) + "&switchcmd=Off";
 		HTTPMonEsp(&ReponseBrute, Msg);
